@@ -1,0 +1,19 @@
+{
+    "name": "chat-app",
+    "version": "1.0.0",
+    "description": "A desktop chat application built with Electron and Node.js with DeepSeek AI integration",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dev": "electron . --dev",
+        "package": "electron-packager . chat-app --platform=win32 --arch=x64 --out=dist --overwrite"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+        "electron": "^30.0.0"
+    },
+    "devDependencies": {
+        "electron-packager": "^17.1.2"
+    }
+}

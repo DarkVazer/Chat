@@ -1,0 +1,832 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #FFFFFF;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+
+/* Заменить существующий блок .sidebar */
+/* Обновить .sidebar для учета панели управления */
+.sidebar {
+    position: fixed;
+    top: 30px; /* Смещаем ниже кастомной панели */
+    left: 0;
+    width: 50px; /* Закрытое состояние по умолчанию */
+    height: calc(100vh - 30px); /* Учитываем высоту панели управления */
+    background: #FFFFFF;
+    border-right: 1px solid #d3d3d361;
+    z-index: 100;
+    overflow: hidden;
+}
+
+/* Добавить новый блок для анимации при взаимодействии */
+.sidebar.transition-enabled {
+    transition: width 0.3s ease;
+}
+
+
+/* Добавить новый блок для открытого состояния */
+.sidebar.open {
+    width: 125px;
+}
+
+/* Добавить анимацию при взаимодействии */
+.sidebar.transition-enabled {
+    transition: width 0.3s ease;
+}
+
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 20%;
+    cursor: pointer;
+    color: rgba(150, 150, 150, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.sidebar-toggle-btn:hover {
+    background: rgba(150, 150, 150, 0.1);
+    color: rgba(100, 100, 100, 1);
+}
+
+.container {
+    width: calc(100% - 145px); /* 125px sidebar + 20px padding */
+    max-width: 600px;
+    min-width: 300px; /* Prevent excessive compression */
+    position: relative;
+    margin-left: 125px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* Заменить блок .sidebar.closed + .container */
+.sidebar.open + .container {
+    margin-left: 125px;
+    width: calc(100% - 145px); /* 125px sidebar + 20px padding */
+}
+
+/* Заменить существующий блок .window-controls (без изменений, для контекста) */
+.window-controls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #d3d3d361;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Кнопки справа */
+    padding-right: 10px; /* Отступ справа */
+    z-index: 200; /* Выше всех элементов, включая боковую панель */
+    -webkit-app-region: drag; /* Позволяет перетаскивать окно */
+}
+
+/* Заменить существующий блок .window-control-btn (добавлен -webkit-app-region: no-drag) */
+.window-control-btn {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: none;
+    margin: 0 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(200, 200, 200, 0.2);
+    transition: background 0.2s ease;
+    -webkit-app-region: no-drag; /* Исключает кнопки из зоны перетаскивания */
+}
+
+/* Заменить существующий блок .window-control-btn svg (без изменений) */
+.window-control-btn svg {
+    width: 10px;
+    height: 10px;
+    fill: none;
+    stroke: #666;
+}
+
+/* Заменить существующий блок .window-control-btn:hover (без изменений) */
+.window-control-btn:hover {
+    background: rgba(200, 200, 200, 0.4);
+}
+
+/* Заменить существующий блок .window-control-btn:active (без изменений) */
+.window-control-btn:active {
+    transform: scale(0.95);
+}
+
+.container.active-chat {
+    max-width: 640px;
+    height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.help-text-container {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 30.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-text {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}
+
+.chat-container {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    padding-top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.container.active-chat .chat-container {
+    display: flex;
+}
+
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #333;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.user-message {
+    background: #F4F4F4;
+    align-self: flex-end;
+    max-width: 630px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    word-break: keep-all;
+}
+
+.bot-message {
+    background: #FFFFFF;
+    align-self: flex-start;
+}
+
+/* =============== НОВЫЙ КРАСИВЫЙ ИНДИКАТОР ЗАГРУЗКИ =============== */
+.ai-thinking {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    color: rgba(120, 120, 120, 0.9);
+    font-style: italic;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.thinking-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.thinking-dots .dot {
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(45deg, #666, #999);
+    border-radius: 50%;
+    animation: thinking-pulse 1.4s infinite ease-in-out both;
+}
+
+.thinking-dots .dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.thinking-dots .dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.thinking-dots .dot:nth-child(3) {
+    animation-delay: 0;
+}
+
+@keyframes thinking-pulse {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+.thinking-text {
+    background: linear-gradient(90deg, #666, #999, #666);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: thinking-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes thinking-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* =============== ПОДДЕРЖКА MARKDOWN СТИЛЕЙ =============== */
+
+/* Заголовки */
+.bot-message h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 16px 0 12px 0;
+    border-bottom: 2px solid #e1e1e1;
+    padding-bottom: 8px;
+}
+
+.bot-message h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2a2a2a;
+    margin: 14px 0 10px 0;
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 6px;
+}
+
+.bot-message h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 12px 0 8px 0;
+}
+
+/* Параграфы */
+.bot-message p {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.bot-message p:first-child {
+    margin-top: 0;
+}
+
+.bot-message p:last-child {
+    margin-bottom: 0;
+}
+
+/* Текстовое форматирование */
+.bot-message strong {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.bot-message em {
+    font-style: italic;
+    color: #444;
+}
+
+/* Инлайн код */
+.bot-message code {
+    background: #f6f8fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    color: #d73a49;
+    border: 1px solid #e1e4e8;
+}
+
+/* Блоки кода */
+.bot-message pre {
+    background: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    overflow-x: auto;
+    position: relative;
+}
+
+.bot-message pre code {
+    background: none;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    color: #24292e;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre;
+}
+
+/* Списки */
+.bot-message ul, .bot-message ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.bot-message li {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+.bot-message ul li {
+    list-style-type: disc;
+}
+
+.bot-message ul li::marker {
+    color: #666;
+}
+
+/* Ссылки */
+.bot-message a {
+    color: #0366d6;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.bot-message a:hover {
+    color: #0256cc;
+    border-bottom-color: #0256cc;
+}
+
+/* Анимация стримингового текста */
+.streaming-text {
+    position: relative;
+}
+
+.streaming-text::after {
+    content: '▋';
+    color: #666;
+    animation: cursor-blink 1s infinite;
+    margin-left: 2px;
+}
+
+@keyframes cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* =============== ОСТАЛЬНЫЕ СТИЛИ БЕЗ ИЗМЕНЕНИЙ =============== */
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.container.active-chat .input-wrapper {
+    margin-bottom: 20px;
+}
+
+.plus-btn {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 10;
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: rgba(150, 150, 150, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.plus-btn:hover {
+    background: rgba(150, 150, 150, 0.1);
+    color: rgba(100, 100, 100, 1);
+}
+
+.search-btn {
+    position: absolute;
+    left: 50px;
+    bottom: 10px;
+    z-index: 10;
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: rgba(150, 150, 150, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.search-btn:hover {
+    background: rgba(150, 150, 150, 0.1);
+    color: rgba(100, 100, 100, 1);
+}
+
+.think-btn {
+    position: absolute;
+    left: 90px;
+    bottom: 10px;
+    z-index: 10;
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: rgba(150, 150, 150, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.think-btn:hover {
+    background: rgba(150, 150, 150, 0.1);
+    color: rgba(100, 100, 100, 1);
+}
+
+.voice-btn {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 10;
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: rgba(150, 150, 150, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    transition: all 0.2s ease;
+}
+
+.voice-btn:hover {
+    background: rgba(150, 150, 150, 0.1);
+    color: rgba(100, 100, 100, 1);
+}
+
+.send-btn {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 10;
+    background: #dbdbdb;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    transition: all 0.2s ease;
+}
+
+.send-btn:hover {
+    background: #808080;
+    transform: scale(1.05);
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+.send-btn.visible {
+    display: flex;
+}
+
+.voice-btn.hidden {
+    display: none;
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.message-input {
+    width: 100%;
+    min-height: 50px;
+    max-height: 210px;
+    background: #FFFFFFCC;
+    border: 0.5px solid #D3D3D3;
+    border-radius: 25px;
+    padding: 15px 50px 15px 130px;
+    font-size: 15px;
+    font-weight: 300;
+    color: #666;
+    outline: none;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(0, 0, 0, 0.04),
+        0 2px 8px rgba(0, 0, 0, 0.02);
+    backdrop-filter: blur(10px);
+    resize: none;
+    overflow-y: hidden;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.container.active-chat .message-input {
+    width: 100%; /* Full width in active chat state */
+    min-height: 50px;
+}
+
+.message-input:focus {
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(0, 0, 0, 0.04),
+        0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.message-input::placeholder {
+    color: rgba(150, 150, 150, 0.7);
+    font-size: 15px;
+    font-weight: 300;
+}
+
+.message-input::-webkit-scrollbar {
+    width: 6px;
+}
+
+.message-input::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.message-input::-webkit-scrollbar-thumb {
+    background: rgba(200, 200, 200, 0.3);
+    border-radius: 3px;
+}
+
+.message-input::-webkit-scrollbar-thumb:hover {
+    background: rgba(200, 200, 200, 0.5);
+}
+
+.buttons-container {
+    margin-top: 15.5px;
+    display: flex;
+    justify-content: center;
+    gap: 4.6px;
+    width: 100%;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFFCC;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #666;
+    cursor: pointer;
+    border: 0.5px solid #D3D3D3;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.action-btn:active {
+    transform: scale(0.98);
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.action-btn.more-btn svg {
+    margin-right: 0;
+}
+
+@media (max-width: 680px) {
+    .container {
+        width: calc(100% - 120px); /* 100px sidebar + 20px padding */
+        min-width: 250px; /* Slightly smaller min-width for mobile */
+        margin-left: 100px;
+    }
+    .sidebar.closed + .container {
+        margin-left: 50px;
+        width: calc(100% - 70px); /* 50px sidebar + 20px padding */
+    }
+    .container.active-chat .message-input {
+        width: 100%;
+    }
+    .sidebar {
+        width: 100px;
+    }
+    .sidebar.closed {
+        width: 50px;
+    }
+}
+
+/* Стили для сообщений от предустановленных кнопок */
+.preset-message {
+    background: #F8F8F8;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Устаревшие стили индикатора - заменены новыми */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    color: rgba(150, 150, 150, 0.8);
+    font-style: italic;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.typing-indicator::after {
+    content: '●●●';
+    display: inline-block;
+    margin-left: 8px;
+    animation: typing-dots 1.5s infinite;
+    font-size: 12px;
+}
+
+@keyframes typing-dots {
+    0%, 20% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+/* Анимация для стримингового текста */
+.bot-message {
+    animation: messageAppear 0.2s ease-out;
+}
+
+/* Плавное появление текста при стриминге */
+@keyframes textStream {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}
+
+.bot-message:not(:has(.ai-thinking)) {
+    animation: textStream 0.1s ease-out;
+}
+
+/* Стили для ошибок - следуя вашей цветовой схеме */
+.error-message {
+    background-color: #FFF5F5;
+    color: #D73A49;
+    border: 0.5px solid #FFCDD2;
+    border-radius: 15px;
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+/* Улучшения для кнопок действий - следуя вашему стилю */
+.action-btn {
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #F0F0F0CC;
+    transform: translateY(-1px);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 4px 12px rgba(0, 0, 0, 0.03),
+        0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.action-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Индикатор загрузки для кнопок - ваша стилистика */
+.action-btn.loading {
+    pointer-events: none;
+    opacity: 0.6;
+    background: #F5F5F5CC;
+}
+
+.action-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid transparent;
+    border-top: 1.5px solid rgba(150, 150, 150, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Стили для длинного текста в сообщениях */
+.message {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+/* Скроллбар для чата - следуя вашему дизайну */
+.chat-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: rgba(200, 200, 200, 0.3);
+    border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(200, 200, 200, 0.5);
+}
+
+/* Анимация появления сообщений */
+.message {
+    animation: messageAppear 0.3s ease-out;
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для отключенных кнопок (think и search) */
+.action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #F8F8F8CC;
+    color: rgba(150, 150, 150, 0.5);
+}
+
+.action-btn:disabled:hover {
+    background: #F8F8F8CC;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Дополнительные стили для улучшения UX */
+.send-btn.sending {
+    animation: pulse 1s infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+

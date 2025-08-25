@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Чат</title>
+</head>
+<body>
+    <!-- Кастомная панель управления -->
+    <div class="window-controls">
+        <button class="window-control-btn minimize" aria-label="Свернуть окно" id="minimizeBtn">
+            <svg viewBox="0 0 12 12" class="icon">
+                <rect x="2" y="5" width="8" height="2" />
+            </svg>
+        </button>
+        <button class="window-control-btn maximize" aria-label="Развернуть окно" id="maximizeBtn">
+            <svg viewBox="0 0 12 12" class="icon">
+                <rect x="2" y="2" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2" />
+            </svg>
+        </button>
+        <button class="window-control-btn close" aria-label="Закрыть окно" id="closeBtn">
+            <svg viewBox="0 0 12 12" class="icon">
+                <line x1="2" y1="2" x2="10" y2="10" stroke="currentColor" stroke-width="2" />
+                <line x1="2" y1="10" x2="10" y2="2" stroke="currentColor" stroke-width="2" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="sidebar">
+        <button type="button" class="sidebar-toggle-btn" aria-label="Переключить сайдбар">
+            <img src="../assets/menu.svg" alt="Меню" class="icon">
+        </button>
+    </div>
+    <div class="container">
+        <div class="help-text-container">
+            <span class="help-text">Чем могу помочь?</span>
+        </div>
+        <div class="chat-container">
+            <!-- Messages will be appended here dynamically -->
+        </div>
+        <div class="input-wrapper">
+            <button type="button" class="plus-btn" aria-label="Добавить файл" data-testid="composer-plus-btn">
+                <img src="../assets/plus.svg" alt="Добавить" class="icon">
+            </button>
+            <button type="button" class="search-btn" aria-label="Кнопка поиска" id="searchBtn">
+                <img src="../assets/search.svg" alt="Поиск" class="icon">
+            </button>
+            <button type="button" class="think-btn" aria-label="Кнопка думать" id="thinkBtn">
+                <img src="../assets/think.svg" alt="Размышление" class="icon">
+            </button>
+            <textarea 
+                class="message-input" 
+                placeholder="Напишите что-то приятное..."
+                rows="1"
+            ></textarea>
+            <button aria-label="Кнопка диктовки" type="button" class="voice-btn" id="voiceBtn">
+                <img src="../assets/voice.svg" alt="Голос" class="icon">
+            </button>
+            <button id="sendBtn" aria-label="Отправить подсказку" type="button" class="send-btn" data-testid="send-button">
+                <img src="../assets/send.svg" alt="Отправить" class="icon">
+            </button>
+        </div>
+        <div class="buttons-container">
+            <button type="button" class="action-btn" id="brainstormBtn">
+                <img src="../assets/brainstorm.svg" alt="Мозговой штурм" class="icon">
+                Мозговой штурм
+            </button>
+            <button type="button" class="action-btn" id="codeBtn">
+                <img src="../assets/code.svg" alt="Код" class="icon">
+                Код
+            </button>
+            <button type="button" class="action-btn" id="summarizeBtn">
+                <img src="../assets/summarize.svg" alt="Обобщение" class="icon">
+                Обобщить
+            </button>
+            <button type="button" class="action-btn" id="consultBtn">
+                <img src="../assets/consult.svg" alt="Консультация" class="icon">
+                Консультация
+            </button>
+            <button type="button" class="action-btn more-btn" id="moreBtn">
+                <img src="../assets/more.svg" alt="Еще" class="icon">
+            </button>
+        </div>
+    </div>
+
+    <!-- Затем основные скрипты -->
+    <script type="module" src="scripts/main.js"></script>
+</body>
+</html>
