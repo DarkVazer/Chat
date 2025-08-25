@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotlight</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-top: 50px;
+        }
+
+        .spotlight-container {
+            width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            animation: spotlightAppear 0.2s ease-out;
+        }
+
+        .spotlight-input-container {
+            padding: 5px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .spotlight-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+            color: #333;
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .spotlight-input::placeholder {
+            color: #888;
+        }
+
+        .spotlight-response {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .spotlight-response-content {
+            color: #333;
+            line-height: 1.5;
+            font-size: 20px;
+            min-height: 20px;
+            position: relative;
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #949494;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .spotlight-response.visible {
+            display: block;
+        }
+
+        .spotlight-loading {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            display: none;
+        }
+
+        .spotlight-loading.visible {
+            display: block;
+        }
+
+        @keyframes spotlightAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="spotlight-container">
+        <div class="spotlight-input-container">
+            <input 
+                type="text" 
+                class="spotlight-input" 
+                placeholder="Задайте вопрос..." 
+                autofocus
+                id="spotlightInput"
+            >
+        </div>
+        
+        <div class="spotlight-loading" id="spotlightLoading">
+            <div class="spotlight-response-content">Думаю...</div>
+        </div>
+        
+        <div class="spotlight-response" id="spotlightResponse">
+            <div class="spotlight-response-content" id="responseContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('spotlightInput');
+        const loading = document.getElementById('spotlightLoading');
+        const response = document.getElementById('spotlightResponse');
+        const responseContent = document.getElementById('responseContent');
+
+        // API конфигурация
+        const API_KEY = 'sk-ebb7e88909cf41c88c6ae0eb718133c8';
+        const API_URL = 'https://api.deepseek.com/chat/completions';
+
+        // Обработка ввода
+        input.addEventListener('keydown', handleKeyDown);
+
+        function handleKeyDown(e) {
+            if (e.key === 'Escape') {
+                window.close();
+            } else if (e.key === 'Enter') {
+                const query = input.value.trim();
+                if (query) {
+                    processQuery(query);
+                }
+            }
+        }
+
+        async function processQuery(query) {
+            // Сразу показываем область ответа с курсором
+            loading.classList.remove('visible');
+            responseContent.innerHTML = '<span class="typing-cursor"></span>';
+            response.classList.add('visible');
+            input.disabled = true;
+
+            try {
+                await sendToDeepSeekStream(query);
+            } catch (error) {
+                showResponse(`Ошибка: ${error.message}`);
+            } finally {
+                input.disabled = false;
+                input.value = ''; // Очищаем поле ввода
+                input.focus();
+            }
+        }
+
+        async function sendToDeepSeekStream(message) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-chat",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "Ты — умный и полезный ассистент. Отвечай кратко и по существу."
+                            },
+                            {
+                                role: "user",
+                                content: message
+                            }
+                        ],
+                        stream: true,
+                        temperature: 0.7,
+                        max_tokens: 500
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка API: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                let isFirstChunk = true;
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') {
+                                break;
+                            }
+
+                            try {
+                                const parsed = JSON.parse(data);
+                                const delta = parsed.choices?.[0]?.delta?.content;
+                                
+                                if (delta) {
+                                    fullResponse += delta;
+                                    
+                                    // Эффект печатающего текста
+                                    if (isFirstChunk) {
+                                        isFirstChunk = false;
+                                        responseContent.innerHTML = '';
+                                    }
+                                    
+                                    responseContent.innerHTML = fullResponse + '<span class="typing-cursor"></span>';
+                                    
+                                    // Автоскролл
+                                    response.scrollTop = response.scrollHeight;
+                                }
+                            } catch (e) {
+                                // Игнорируем ошибки парсинга
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                // Убираем курсор после завершения
+                responseContent.innerHTML = fullResponse;
+
+            } catch (error) {
+                console.error('Ошибка стриминга:', error);
+                throw error;
+            }
+        }
+
+        function showResponse(text) {
+            responseContent.textContent = text;
+            response.classList.add('visible');
+            response.scrollTop = response.scrollHeight;
+        }
+
+        // Фокус на input при загрузке
+        window.addEventListener('load', () => {
+            input.focus();
+            input.select();
+        });
+
+        // Закрытие окна при клике вне спотлайта
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.spotlight-container')) {
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html>

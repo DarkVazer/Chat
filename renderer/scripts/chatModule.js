@@ -399,6 +399,7 @@ let conversationHistory = [
     consultBtn.addEventListener('click', handleConsultClick);
     moreBtn.addEventListener('click', handleMoreClick);
 
+
     // Initialize textarea height
     const originalValue = textarea.value;
     textarea.value = 'test';
