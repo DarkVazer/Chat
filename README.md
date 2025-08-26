@@ -32,7 +32,7 @@
 <img width="4792" height="3192" alt="Main minimase" src="https://github.com/user-attachments/assets/96ca50d8-5d68-4053-9608-c233356d3dec" />
 
 <img width="4792" height="3192" alt="Chat minimase" src="https://github.com/user-attachments/assets/c5bc68bc-af85-4c66-a657-191b2ca89faf" />
-
+# SpotLight
 <img width="7680" height="4160" alt="SpotLight" src="https://github.com/user-attachments/assets/352cf0d0-c2f8-4b20-a30f-448425ad82cb" />
 
 ## 📦 Установка и настройка
