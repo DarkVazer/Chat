@@ -22,7 +22,7 @@ export function initializeChat() {
     let isStreaming = false;
 
     // API конфигурация
-    const API_KEY = 'sk-ebb7e88909cf41c88c6ae0eb718133c8';
+    const API_KEY = '';
     const API_URL = 'https://api.deepseek.com/chat/completions';
     
     // История разговора
